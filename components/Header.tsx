@@ -17,7 +17,9 @@ function useActiveSection() {
     );
     if (els.length === 0) return;
 
+    let raf = 0;
     const pick = () => {
+      raf = 0;
       const mid = window.innerHeight * 0.45;
       let best: string | null = null;
       let bestDist = Infinity;
@@ -32,14 +34,22 @@ function useActiveSection() {
       }
       setActive(best);
     };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(pick);
+    };
 
-    const io = new IntersectionObserver(() => pick(), {
+    const io = new IntersectionObserver(schedule, {
       rootMargin: "-35% 0px -55% 0px",
     });
     els.forEach((el) => io.observe(el));
     pick();
+    window.addEventListener("scroll", schedule, { passive: true });
 
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", schedule);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   return active;
@@ -58,7 +68,7 @@ export default function Header() {
   }, []);
 
   const linkClass = (href: string, mobile = false) =>
-    `relative font-mono tracking-[0.14em] transition-colors duration-200 ${
+    `relative inline-block font-mono tracking-[0.14em] transition-colors duration-200 ${
       mobile ? "block py-2 text-[13px]" : "text-[12px]"
     } ${
       active === href.slice(1)
