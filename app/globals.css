@@ -1,26 +1,161 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ——— Koyu tema (varsayılan) ——— */
+:root,
+html.dark {
+  --bg: #031b17;
+  --bg-deep: #02120f;
+  --panel: #06241e;
+  --panel-soft: #0a2b24;
+  --line: rgba(90, 140, 120, 0.16);
+  --line-soft: rgba(90, 140, 120, 0.09);
+  --grid: rgba(90, 140, 120, 0.06);
+  --ink: #e7e3d8;
+  --ink-dim: #c9c9bd;
+  --muted: #9aa99f;
+  --accent: #dc8b32;
+  --accent-soft: rgba(182, 118, 45, 0.35);
+  --accent-ink: #f4b266;
+  --glow-green: rgba(64, 160, 120, 0.14);
+  --header-bg: rgba(3, 27, 23, 0.82);
+  --shadow: rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ——— Açık tema: aynı dil, yumuşak açık tonlar ——— */
+html.light {
+  --bg: #efece1;
+  --bg-deep: #e7e3d3;
+  --panel: #e4dfcd;
+  --panel-soft: #dbd5bf;
+  --line: rgba(46, 84, 70, 0.22);
+  --line-soft: rgba(46, 84, 70, 0.12);
+  --grid: rgba(46, 84, 70, 0.07);
+  --ink: #22302a;
+  --ink-dim: #33443b;
+  --muted: #5f6f63;
+  --accent: #b26a24;
+  --accent-soft: rgba(178, 106, 36, 0.12);
+  --accent-ink: #9a5a1d;
+  --glow-green: rgba(64, 140, 105, 0.12);
+  --header-bg: rgba(239, 236, 225, 0.85);
+  --shadow: rgba(60, 70, 60, 0.18);
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 8px;
+}
+
+/* İnce teknik grid overlay */
+.tech-grid {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.tech-grid-fade {
+  mask-image: radial-gradient(
+    ellipse 100% 70% at 50% 0%,
+    black 20%,
+    transparent 85%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 100% 70% at 50% 0%,
+    black 20%,
+    transparent 85%
+  );
+}
+
+/* Hero kartı: çok hafif floating (0 → -5px → 0, yavaş) */
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.animate-hero-float {
+  animation: hero-float 8s ease-in-out infinite;
+}
+
+/* Scroll indicator: nokta çizgide hafifçe ilerler */
+@keyframes scroll-dot {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% - 3px);
+    opacity: 0;
+  }
+}
+.scroll-hint-dot {
+  animation: scroll-dot 2.4s ease-in-out infinite;
+}
+
+/* Klavye odağı görünürlüğü */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-hero-float,
+  .scroll-hint-dot {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

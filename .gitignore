@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# admin secrets (password hash + sessions) — asla commitleme
+data/.admin.json
+data/.sessions.json
+
+# kullanıcı upload'ları repoya girmez (sunucuda kalır)
+public/uploads/*
