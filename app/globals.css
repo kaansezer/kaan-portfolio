@@ -3,6 +3,7 @@
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 }
 
 /* ——— Koyu tema (varsayılan) ——— */
@@ -25,6 +26,23 @@ html.dark {
   --header-bg: rgba(3, 27, 23, 0.82);
   --shadow: rgba(0, 0, 0, 0.45);
   color-scheme: dark;
+
+  /* ——— Hero'ya özel palet (koyu) ———
+     Site genelindeki token'lara dokunmadan hero'yu kendi tasarım diline
+     taşır; tema anahtarı ikisini birden çevirir. */
+  --hero-bg: #0a1712;
+  --hero-ink: #f7f3e8;
+  --hero-ink-2: #cfc9ba;
+  --hero-dim: #8a9b90;
+  --hero-line: #1b2c24;
+  --hero-line-strong: #33473c;
+  /* dolgu/dekor tonu */
+  --hero-accent: #d98a4d;
+  /* metin tonu — zemine karşı en az 4.5:1 */
+  --hero-accent-ink: #f0a868;
+  --hero-accent-hover: #f0a868;
+  --hero-glow: rgba(217, 138, 77, 0.2);
+  --hero-board-shadow: rgba(0, 0, 0, 0.62);
 }
 
 /* ——— Açık tema: aynı dil, yumuşak açık tonlar ——— */
@@ -46,6 +64,21 @@ html.light {
   --header-bg: rgba(239, 236, 225, 0.85);
   --shadow: rgba(60, 70, 60, 0.18);
   color-scheme: light;
+
+  /* ——— Hero'ya özel palet (açık) ———
+     Aynı roller, fildişi zemin. Turuncu metin tonu ivory üzerinde
+     4.5:1'i tutturmak için koyulaştırıldı; dolgu tonu sıcak kalır. */
+  --hero-bg: #efece1;
+  --hero-ink: #1d2a24;
+  --hero-ink-2: #3c4a42;
+  --hero-dim: #5f6f63;
+  --hero-line: rgba(46, 84, 70, 0.14);
+  --hero-line-strong: rgba(46, 84, 70, 0.34);
+  --hero-accent: #b26a24;
+  --hero-accent-ink: #8f4f14;
+  --hero-accent-hover: #8f4f14;
+  --hero-glow: rgba(217, 138, 77, 0.16);
+  --hero-board-shadow: rgba(60, 70, 60, 0.28);
 }
 
 html {
@@ -102,6 +135,68 @@ body {
   );
 }
 
+/* ——— Hero arka planı ——— */
+
+/* 72px'lik çok soluk teknik grid */
+.hero-grid {
+  background-image:
+    linear-gradient(var(--hero-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--hero-line) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+/* sağ üstte turuncu radial glow */
+.hero-glow {
+  background: radial-gradient(
+    ellipse 60% 55% at 82% 12%,
+    var(--hero-glow),
+    transparent 70%
+  );
+}
+
+/* Kart yığını ölçeği: px değerleri (genişlik, kaymalar) bu çarpanla küçülür.
+   Sütun daraldıkça yığın da orantılı küçülür, sağdan kesilmez. */
+.hero-stack {
+  --k: 1;
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .hero-stack {
+    --k: 0.6;
+  }
+}
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .hero-stack {
+    --k: 0.8;
+  }
+}
+
+/* SCROLL göstergesi yalnızca yeterince geniş VE yüksek ekranda: dar/alçak
+   viewport'ta sol sütunun altına (yetenek grid'ine) binmesin. */
+.hero-scroll-hint {
+  display: none;
+}
+@media (min-width: 1280px) and (min-height: 820px) {
+  .hero-scroll-hint {
+    display: flex;
+  }
+}
+
+/* Scroll göstergesi: nokta çizgi üzerinde gidip gelir */
+@keyframes hero-scroll-dot {
+  0%,
+  100% {
+    transform: translate3d(0, -50%, 0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate3d(44px, -50%, 0);
+    opacity: 1;
+  }
+}
+.hero-scroll-dot {
+  animation: hero-scroll-dot 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
 /* Hero kartı: çok hafif floating (0 → -5px → 0, yavaş) */
 @keyframes hero-float {
   0%,
@@ -149,7 +244,8 @@ body {
     scroll-behavior: auto;
   }
   .animate-hero-float,
-  .scroll-hint-dot {
+  .scroll-hint-dot,
+  .hero-scroll-dot {
     animation: none;
   }
   *,

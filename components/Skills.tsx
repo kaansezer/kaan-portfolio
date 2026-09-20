@@ -3,21 +3,32 @@
 import { motion } from "framer-motion";
 import { certificates, skillRows } from "@/data/portfolio";
 import SectionHead from "./SectionHead";
-import Reveal, { EASE, useMotionPrefs } from "./Reveal";
+import { EASE, RevealGroup, RevealItem, useMotionPrefs } from "./Reveal";
 import { Award } from "lucide-react";
 
 export default function Skills() {
   const { reduce } = useMotionPrefs();
 
+  const rowVariants = reduce
+    ? { hidden: {}, show: {} }
+    : {
+        hidden: { opacity: 0, x: -12 },
+        show: { opacity: 1, x: 0, transition: { duration: 0.5, ease: EASE } },
+      };
+
   return (
     <section id="yetenekler" aria-label="Yetenekler" className="scroll-mt-20">
-      <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+      <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 md:py-28">
         <SectionHead title="Yetenekler" sheet="SHEET 04/04" />
 
-        <Reveal className="mt-10">
-          <p className="font-mono text-[11px] tracking-[0.22em] text-[var(--muted)]">
+        <RevealGroup className="mt-10" y={24} scaleFrom={1} stagger={0.06}>
+          <RevealItem
+            as="p"
+            y={10}
+            className="font-mono text-[11px] tracking-[0.22em] text-[var(--muted)]"
+          >
             MALZEME LİSTESİ — BOM / YETENEK DÖKÜMÜ
-          </p>
+          </RevealItem>
 
           <div className="mt-4 overflow-hidden rounded-md border border-[var(--line)]">
             <table className="w-full border-collapse text-left">
@@ -31,10 +42,7 @@ export default function Skills() {
                 {skillRows.map((row, i) => (
                   <motion.tr
                     key={row.category}
-                    initial={reduce ? false : { opacity: 0, x: -12 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.5, delay: reduce ? 0 : i * 0.07, ease: EASE }}
+                    variants={rowVariants}
                     className={`grid gap-1 px-5 py-4 sm:table-row md:px-6 ${
                       i % 2 === 0 ? "bg-[var(--panel)]" : "bg-transparent"
                     } ${i > 0 ? "border-t border-[var(--line-soft)]" : ""}`}
@@ -45,7 +53,7 @@ export default function Skills() {
                     >
                       {row.category}
                     </th>
-                    <td className="text-[14px] leading-relaxed text-[var(--ink-dim)] sm:px-6 sm:py-4">
+                    <td className="text-[14px] leading-[1.7] text-[var(--ink-dim)] sm:px-6 sm:py-4">
                       {row.items}
                     </td>
                   </motion.tr>
@@ -53,28 +61,30 @@ export default function Skills() {
               </tbody>
             </table>
           </div>
-        </Reveal>
+        </RevealGroup>
 
-        <Reveal className="mt-10">
-          <h3 className="font-mono text-[12px] tracking-[0.22em] text-[var(--muted)]">
+        <RevealGroup className="mt-12" y={24} scaleFrom={1} stagger={0.07}>
+          <RevealItem
+            as="h3"
+            y={10}
+            className="font-mono text-[12px] tracking-[0.22em] text-[var(--muted)]"
+          >
             SERTİFİKALAR
-          </h3>
+          </RevealItem>
           <ul className="mt-4 space-y-3">
-            {certificates.map((c, i) => (
-              <motion.li
+            {certificates.map((c) => (
+              <RevealItem
+                as="li"
                 key={c}
-                initial={reduce ? false : { opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: reduce ? 0 : i * 0.08, ease: EASE }}
+                y={12}
                 className="flex items-start gap-3 text-[15px] text-[var(--ink-dim)]"
               >
                 <Award size={17} aria-hidden className="mt-0.5 shrink-0 text-[var(--accent-ink)]" />
                 {c}
-              </motion.li>
+              </RevealItem>
             ))}
           </ul>
-        </Reveal>
+        </RevealGroup>
       </div>
     </section>
   );

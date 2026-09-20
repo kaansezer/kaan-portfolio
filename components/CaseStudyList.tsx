@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import BoardImage from "./BoardImage";
-import Reveal from "./Reveal";
+import { RevealGroup, RevealItem } from "./Reveal";
 import StatusBadge from "./StatusBadge";
 import CaseStudyModal from "./CaseStudyModal";
 import { hasCaseDetail, type CaseStudyProject } from "@/lib/case-study-types";
@@ -64,13 +64,13 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
         {projects.map((p, i) => {
           const detail = hasCaseDetail(p);
           return (
-            <Reveal
+            <RevealGroup
               as="article"
               key={p.id}
-              y={28}
-              scaleFrom={0.985}
-              duration={0.7}
-              delay={Math.min(i * 0.1, 0.2)}
+              y={34}
+              scaleFrom={0.975}
+              duration={0.85}
+              delay={Math.min(i * 0.08, 0.16)}
             >
               <div
                 onClick={detail ? () => open(p.slug) : undefined}
@@ -87,16 +87,35 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                     : undefined
                 }
                 aria-label={detail ? `${p.title} — detayları incele` : undefined}
-                className={`group rounded-md border border-[var(--line)] bg-[var(--panel)] p-6 transition-[transform,border-color,box-shadow] duration-200 md:p-8 ${
+                className={`group relative overflow-hidden rounded-md border bg-[var(--panel)] p-6 transition-[transform,border-color,box-shadow] duration-200 md:p-8 ${
+                  p.featured
+                    ? "border-[var(--accent-soft)] shadow-[0_0_28px_var(--accent-soft)]"
+                    : "border-[var(--line)]"
+                } ${
                   detail
                     ? "cursor-pointer hover:-translate-y-[3px] hover:border-[var(--accent)] hover:shadow-[0_0_32px_var(--accent-soft)]"
                     : ""
                 }`}
               >
-                <Reveal y={12} duration={0.5} delay={0.05}>
+                {/* öne çıkan projede üst kenarda ince vurgu şeridi */}
+                {p.featured && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent"
+                  />
+                )}
+                <RevealItem y={12} duration={0.5}>
                   <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
-                    <span className="font-mono text-[12px] tracking-[0.2em] text-[var(--accent-ink)]">
-                      {p.projectCode}
+                    <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                      <span className="font-mono text-[12px] tracking-[0.2em] text-[var(--accent-ink)]">
+                        {p.projectCode}
+                      </span>
+                      {p.featured && (
+                        <span className="inline-flex items-center gap-1.5 rounded-sm border border-[var(--accent-soft)] px-2 py-0.5 font-mono text-[10px] tracking-[0.18em] text-[var(--accent-ink)]">
+                          <Star size={10} aria-hidden fill="currentColor" strokeWidth={0} />
+                          ÖNE ÇIKAN
+                        </span>
+                      )}
                     </span>
                     <span className="flex flex-col items-end gap-2">
                       <StatusBadge status={p.status} />
@@ -107,22 +126,22 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                       )}
                     </span>
                   </div>
-                </Reveal>
+                </RevealItem>
 
-                <Reveal y={12} duration={0.5} delay={0.1}>
-                  <h3 className="mt-4 max-w-3xl text-2xl font-semibold tracking-tight text-[var(--ink)] md:text-3xl">
+                <RevealItem y={12} duration={0.5}>
+                  <h3 className="mt-4 max-w-3xl text-balance text-2xl font-semibold tracking-tight text-[var(--ink)] md:text-3xl">
                     {p.title}
                   </h3>
-                </Reveal>
+                </RevealItem>
 
-                <Reveal y={12} duration={0.5} delay={0.15}>
-                  <p className="mt-3 max-w-3xl leading-relaxed text-[var(--muted)]">
+                <RevealItem y={12} duration={0.5}>
+                  <p className="mt-3 max-w-[68ch] text-pretty leading-[1.7] text-[var(--muted)]">
                     {p.shortDescription}
                   </p>
-                </Reveal>
+                </RevealItem>
 
                 {p.specs.length > 0 && (
-                  <Reveal y={12} duration={0.5} delay={0.2}>
+                  <RevealItem y={12} duration={0.5}>
                     <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-[var(--line-soft)] pt-5 sm:grid-cols-3 lg:grid-cols-4">
                       {[...p.specs]
                         .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -137,11 +156,11 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                           </div>
                         ))}
                     </dl>
-                  </Reveal>
+                  </RevealItem>
                 )}
 
                 {p.pipeline && p.pipeline.length > 0 && (
-                  <Reveal y={12} duration={0.5} delay={0.22}>
+                  <RevealItem y={12} duration={0.5}>
                     <div className="mt-6 border-t border-[var(--line-soft)] pt-5">
                       <p className="font-mono text-[10px] tracking-[0.2em] text-[var(--muted)]">
                         CURRENT STAGE
@@ -162,7 +181,7 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                         ))}
                       </ul>
                     </div>
-                  </Reveal>
+                  </RevealItem>
                 )}
 
                 {p.media.length > 0 && (
@@ -170,13 +189,13 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                     {[...p.media]
                       .sort((a, b) => a.sortOrder - b.sortOrder)
                       .slice(0, 3)
-                      .map((m, vi) => (
+                      .map((m) => (
                         <BoardImage
                           key={m.id}
                           src={m.image}
                           alt={m.alt}
                           caption={m.title}
-                          delay={0.2 + vi * 0.1}
+                          item
                         />
                       ))}
                   </div>
@@ -189,7 +208,7 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                   </span>
                 )}
               </div>
-            </Reveal>
+            </RevealGroup>
           );
         })}
       </div>
