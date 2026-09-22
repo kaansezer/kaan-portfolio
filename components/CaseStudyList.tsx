@@ -1,62 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import BoardImage from "./BoardImage";
-import Reveal from "./Reveal";
+import { RevealGroup, RevealItem } from "./Reveal";
 import StatusBadge from "./StatusBadge";
-import CaseStudyModal from "./CaseStudyModal";
+import { useProjectNav } from "./ProjectNavContext";
 import { hasCaseDetail, type CaseStudyProject } from "@/lib/case-study-types";
 
 const STAGE_MARK = { done: "✓", active: "●", todo: "○" } as const;
 
-function paramOf(): string | null {
-  if (typeof window === "undefined") return null;
-  return new URLSearchParams(window.location.search).get("project");
-}
-
 /**
- * Proje kartları + case study modal + URL state (?project=slug).
- * Kart tıklaması sayfa geçişi yapmaz; back tuşu modalı kapatır.
+ * Proje kartları. Tıklama, ProjectViewGate'e (üst seviye) bildirilir —
+ * detay artık modal değil, tam sayfa case-study görünümü olarak açılır.
  */
 export default function CaseStudyList({ projects }: { projects: CaseStudyProject[] }) {
-  const [openSlug, setOpenSlug] = useState<string | null>(() => {
-    const initial = paramOf();
-    return initial && projects.some((p) => p.slug === initial) ? initial : null;
-  });
-  const [pushed, setPushed] = useState(false);
-
-  const open = useCallback((slug: string) => {
-    setOpenSlug(slug);
-    setPushed(true);
-    window.history.pushState({ project: slug }, "", `?project=${slug}`);
-  }, []);
-
-  const close = useCallback(() => {
-    if (pushed) {
-      setPushed(false);
-      window.history.back();
-    } else {
-      setOpenSlug(null);
-    }
-  }, [pushed]);
-
-  // back tuşu
-  useEffect(() => {
-    const onPop = () => setOpenSlug(paramOf());
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, []);
-
-  // modal kapalıyken URL'de artık parametre kalmasın
-  useEffect(() => {
-    if (openSlug) return;
-    if (paramOf()) {
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-  }, [openSlug]);
-
-  const active = projects.find((p) => p.slug === openSlug) ?? null;
+  const { openProject } = useProjectNav();
 
   return (
     <>
@@ -64,16 +22,16 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
         {projects.map((p, i) => {
           const detail = hasCaseDetail(p);
           return (
-            <Reveal
+            <RevealGroup
               as="article"
               key={p.id}
-              y={28}
-              scaleFrom={0.985}
-              duration={0.7}
-              delay={Math.min(i * 0.1, 0.2)}
+              y={34}
+              scaleFrom={0.975}
+              duration={0.85}
+              delay={Math.min(i * 0.08, 0.16)}
             >
               <div
-                onClick={detail ? () => open(p.slug) : undefined}
+                onClick={detail ? () => openProject(p.slug) : undefined}
                 role={detail ? "button" : undefined}
                 tabIndex={detail ? 0 : undefined}
                 onKeyDown={
@@ -81,22 +39,41 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                     ? (e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          open(p.slug);
+                          openProject(p.slug);
                         }
                       }
                     : undefined
                 }
                 aria-label={detail ? `${p.title} — detayları incele` : undefined}
-                className={`group rounded-md border border-[var(--line)] bg-[var(--panel)] p-6 transition-[transform,border-color,box-shadow] duration-200 md:p-8 ${
+                className={`group relative overflow-hidden rounded-xl border bg-[var(--panel)] p-8 transition-all duration-300 md:p-10 ${
+                  p.featured
+                    ? "border-[var(--accent)]/45 bg-gradient-to-br from-[var(--panel)] via-[var(--panel)] to-[var(--panel-soft)] shadow-[0_0_40px_var(--accent-soft)] ring-1 ring-[var(--accent)]/20"
+                    : "border-[var(--line)] hover:border-[var(--line-soft)]"
+                } ${
                   detail
-                    ? "cursor-pointer hover:-translate-y-[3px] hover:border-[var(--accent)] hover:shadow-[0_0_32px_var(--accent-soft)]"
+                    ? "card-glow-hover cursor-pointer hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
                     : ""
                 }`}
               >
-                <Reveal y={12} duration={0.5} delay={0.05}>
+                {/* öne çıkan projede üst kenarda ince vurgu şeridi */}
+                {p.featured && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent"
+                  />
+                )}
+                <RevealItem y={12} duration={0.5}>
                   <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
-                    <span className="font-mono text-[12px] tracking-[0.2em] text-[var(--accent-ink)]">
-                      {p.projectCode}
+                    <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                      <span className="font-mono text-[12px] tracking-[0.2em] text-[var(--accent-ink)]">
+                        {p.projectCode}
+                      </span>
+                      {p.featured && (
+                        <span className="badge-glow inline-flex items-center gap-1.5 rounded-md border border-[var(--accent)]/30 bg-[var(--accent)]/5 px-2.5 py-1 font-mono text-[10px] font-600 tracking-[0.18em] text-[var(--accent-ink)]">
+                          <Star size={10} aria-hidden fill="currentColor" strokeWidth={0} />
+                          ÖNE ÇIKAN
+                        </span>
+                      )}
                     </span>
                     <span className="flex flex-col items-end gap-2">
                       <StatusBadge status={p.status} />
@@ -107,22 +84,37 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                       )}
                     </span>
                   </div>
-                </Reveal>
+                </RevealItem>
 
-                <Reveal y={12} duration={0.5} delay={0.1}>
-                  <h3 className="mt-4 max-w-3xl text-2xl font-semibold tracking-tight text-[var(--ink)] md:text-3xl">
+                <RevealItem y={12} duration={0.5}>
+                  <h3 className="mt-4 max-w-3xl text-balance text-2xl font-semibold tracking-tight text-[var(--ink)] md:text-3xl">
                     {p.title}
                   </h3>
-                </Reveal>
+                </RevealItem>
 
-                <Reveal y={12} duration={0.5} delay={0.15}>
-                  <p className="mt-3 max-w-3xl leading-relaxed text-[var(--muted)]">
+                <RevealItem y={12} duration={0.5}>
+                  <p className="mt-3 max-w-[68ch] text-pretty leading-[1.7] text-[var(--muted)]">
                     {p.shortDescription}
                   </p>
-                </Reveal>
+                </RevealItem>
+
+                {p.tags && p.tags.length > 0 && (
+                  <RevealItem y={10} duration={0.5}>
+                    <ul aria-label="Teknolojiler" className="mt-4 flex flex-wrap gap-2">
+                      {p.tags.map((t) => (
+                        <li
+                          key={t}
+                          className="rounded-sm border border-[var(--line)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--muted)]"
+                        >
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  </RevealItem>
+                )}
 
                 {p.specs.length > 0 && (
-                  <Reveal y={12} duration={0.5} delay={0.2}>
+                  <RevealItem y={12} duration={0.5}>
                     <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-[var(--line-soft)] pt-5 sm:grid-cols-3 lg:grid-cols-4">
                       {[...p.specs]
                         .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -137,11 +129,11 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                           </div>
                         ))}
                     </dl>
-                  </Reveal>
+                  </RevealItem>
                 )}
 
                 {p.pipeline && p.pipeline.length > 0 && (
-                  <Reveal y={12} duration={0.5} delay={0.22}>
+                  <RevealItem y={12} duration={0.5}>
                     <div className="mt-6 border-t border-[var(--line-soft)] pt-5">
                       <p className="font-mono text-[10px] tracking-[0.2em] text-[var(--muted)]">
                         CURRENT STAGE
@@ -162,7 +154,7 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                         ))}
                       </ul>
                     </div>
-                  </Reveal>
+                  </RevealItem>
                 )}
 
                 {p.media.length > 0 && (
@@ -170,13 +162,13 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                     {[...p.media]
                       .sort((a, b) => a.sortOrder - b.sortOrder)
                       .slice(0, 3)
-                      .map((m, vi) => (
+                      .map((m) => (
                         <BoardImage
                           key={m.id}
                           src={m.image}
                           alt={m.alt}
                           caption={m.title}
-                          delay={0.2 + vi * 0.1}
+                          item
                         />
                       ))}
                   </div>
@@ -189,12 +181,10 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                   </span>
                 )}
               </div>
-            </Reveal>
+            </RevealGroup>
           );
         })}
       </div>
-
-      {active && <CaseStudyModal project={active} onClose={close} />}
     </>
   );
 }

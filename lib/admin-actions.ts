@@ -80,6 +80,7 @@ const sectionSchema = z.object({
   content: z.string().max(20000),
   image: z.string().max(500).optional(),
   caption: z.string().max(300).optional(),
+  layout: z.enum(["text", "text-image", "image-text", "full-media"]).optional(),
   visible: z.boolean(),
   sortOrder: z.number().int(),
 });
@@ -100,7 +101,9 @@ const stageSchema = z.object({
 });
 
 const projectSchema = z.object({
-  id: z.string().min(1),
+  // Yeni proje taslağında id boş gelir; normalize() bunu newId() ile üretir
+  // (bkz. aşağıda `input.id || newId()`) — burada min(1) zorunlu KOŞULMAMALI.
+  id: z.string(),
   projectCode: z.string().min(1).max(12),
   title: z.string().min(2).max(140),
   slug: z.string().max(160).optional().default(""),
@@ -122,15 +125,31 @@ const projectSchema = z.object({
   media: z.array(mediaSchema).default([]),
   contributions: z.array(z.string().max(200)).default([]),
   pipeline: z.array(stageSchema).optional().default([]),
+  tags: z.array(z.string().max(40)).optional().default([]),
 });
 
 export type ProjectInput = z.infer<typeof projectSchema>;
 
 // ---------- CRUD ----------
 
-function normalize<T extends ProjectInput>(input: T, existing?: CaseStudyProject): CaseStudyProject {
+/** Verilen slug taban alınarak, `taken` içinde çakışmayan ilk varyantı döner. */
+function uniqueSlug(base: string, taken: Set<string>): string {
+  if (!taken.has(base)) return base;
+  let i = 2;
+  while (taken.has(`${base}-${i}`)) i += 1;
+  return `${base}-${i}`;
+}
+
+function normalize<T extends ProjectInput>(
+  input: T,
+  existing: CaseStudyProject | undefined,
+  takenSlugs: Set<string>,
+): CaseStudyProject {
   const now = new Date().toISOString();
-  const slug = input.slug?.trim() || slugify(input.title);
+  const baseSlug = input.slug?.trim() || slugify(input.title);
+  // mevcut proje düzenleniyorsa kendi eski slug'ı "alınmış" sayılmasın
+  const slug =
+    existing?.slug === baseSlug ? baseSlug : uniqueSlug(baseSlug, takenSlugs);
   return {
     ...(existing ?? {}),
     id: input.id || newId(),
@@ -159,6 +178,7 @@ function normalize<T extends ProjectInput>(input: T, existing?: CaseStudyProject
     media: input.media.map((m, i) => ({ ...m, type: m.type as MediaType, sortOrder: i + 1 })),
     contributions: input.contributions.map((c) => c.trim()).filter(Boolean),
     pipeline: (input.pipeline ?? []).map((p) => ({ ...p })),
+    tags: (input.tags ?? []).map((t) => t.trim()).filter(Boolean),
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };
@@ -176,7 +196,10 @@ export async function saveProjectAction(input: ProjectInput): Promise<{ ok: bool
       p.id !== parsed.data.id,
   );
   if (dup) return { ok: false, error: "Bu Project ID zaten kullanılıyor." };
-  const record = normalize(parsed.data, idx >= 0 ? all[idx] : undefined);
+  const takenSlugs = new Set(
+    all.filter((p) => p.id !== parsed.data.id).map((p) => p.slug),
+  );
+  const record = normalize(parsed.data, idx >= 0 ? all[idx] : undefined, takenSlugs);
   if (idx >= 0) all[idx] = record;
   else {
     record.sortOrder = Math.max(0, ...all.map((p) => p.sortOrder)) + 1;
@@ -186,6 +209,39 @@ export async function saveProjectAction(input: ProjectInput): Promise<{ ok: bool
   revalidatePath("/");
   revalidatePath("/admin");
   return { ok: true, id: record.id };
+}
+
+export async function duplicateProjectAction(id: string): Promise<{ ok: boolean; id?: string }> {
+  await guard();
+  const all = await getAllProjects();
+  const source = all.find((p) => p.id === id);
+  if (!source) return { ok: false };
+
+  const takenCodes = new Set(all.map((p) => p.projectCode.toLowerCase()));
+  let code = `${source.projectCode}-COPY`;
+  let n = 2;
+  while (takenCodes.has(code.toLowerCase())) {
+    code = `${source.projectCode}-COPY${n}`;
+    n += 1;
+  }
+  const takenSlugs = new Set(all.map((p) => p.slug));
+  const now = new Date().toISOString();
+  const copy: CaseStudyProject = {
+    ...source,
+    id: newId(),
+    projectCode: code,
+    title: `${source.title} (Kopya)`,
+    slug: uniqueSlug(`${source.slug}-kopya`, takenSlugs),
+    visible: false,
+    sortOrder: Math.max(0, ...all.map((p) => p.sortOrder)) + 1,
+    createdAt: now,
+    updatedAt: now,
+  };
+  all.push(copy);
+  await saveAllProjects(all);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return { ok: true, id: copy.id };
 }
 
 export async function deleteProjectAction(id: string): Promise<{ ok: boolean }> {

@@ -1,167 +1,207 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { ArrowDown, CircuitBoard, Cpu, Mail, Radio, Rocket } from "lucide-react";
 import { profile } from "@/data/portfolio";
-import HeroPCBExploded from "./HeroPCBExploded";
+import PCBScrollStage from "./hero/PCBScrollStage";
+import { EXPERTISE, HERO_MOTION as M } from "./hero/config";
+import { mapRange, revealStyle } from "./hero/heroMath";
+import { useHeroScroll, useMouseParallax } from "./hero/useHeroScroll";
+import { useSmoothedProgress } from "./hero/useSmoothedProgress";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+const ICONS = { cpu: Cpu, board: CircuitBoard, radio: Radio, rocket: Rocket } as const;
 
-const EXPERTISE = [
-  { icon: Cpu, top: "Embedded", bottom: "Systems" },
-  { icon: CircuitBoard, top: "PCB", bottom: "Design" },
-  { icon: Radio, top: "RF &", bottom: "Telemetry" },
-  { icon: Rocket, top: "Avionics", bottom: "Applications" },
-] as const;
-
-function Rise({
-  children,
-  delay,
-  y = 22,
-}: {
-  children: React.ReactNode;
-  delay: number;
-  y?: number;
-}) {
-  const reduce = useReducedMotion();
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: reduce ? 0 : y }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: reduce ? 0 : delay, ease: EASE }}
-    >
-      {children}
-    </motion.div>
-  );
+/** <1024px: metin+PCB dikey akışa döner, scroll-scrub kapanır. */
+function useCompact() {
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setCompact(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  return compact;
 }
 
 export default function Hero() {
-  const heroScrollRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const reduce = !!useReducedMotion();
+  const compact = useCompact();
+
+  // Yalnızca desktop + motion izinliyken scroll dinlenir; hafifçe yumuşatılır
+  // (bkz. useSmoothedProgress) ama HİÇBİR bağımsız zamanlayıcı yok — animasyon
+  // birebir scroll konumunun türevi. Yukarı kaydırma otomatik olarak tersine
+  // sarar, scroll durunca animasyon da durur.
+  const animate = !reduce && !compact;
+  const { progress: rawProgress, travelled } = useHeroScroll(sectionRef, animate);
+  const smoothedProgress = useSmoothedProgress(rawProgress, 0.12, animate);
+  // reduced-motion: nihai kompozisyonu anında göster (accessibility gereği).
+  const heroProgress = reduce ? 1 : smoothedProgress;
+
+  // İmleç tabanlı hafif 3D eğim — scroll'dan TAMAMEN bağımsız, kullanıcı
+  // etkileşimine tepki verir (autoplay değil). Yalnızca fare/trackpad'i olan
+  // cihazlarda çalışır (bkz. useMouseParallax: pointer:fine guard).
+  const mouse = useMouseParallax(stageRef, animate, 0.08);
+
+  // Metin grupları: mobil/tablet veya reduced-motion'da her zaman tam görünür
+  // (bkz. AGENTS: "mobil deneyim kasıtlı tasarlanmalı, masaüstünün küçültülmüş
+  // hali olmamalı"); desktop'ta yalnızca `heroProgress`'in bir fonksiyonu.
+  const group = (start: number, end: number) =>
+    compact || reduce
+      ? { opacity: 1, transform: "none" }
+      : revealStyle(heroProgress, start, end, 18);
+
+  const eyebrowLineScale = compact || reduce ? 1 : mapRange(heroProgress, 0.7, 0.78);
+  const scrollHintOpacity = compact || reduce ? 0 : 1 - mapRange(heroProgress, 0, 0.15);
 
   return (
     <section
-      ref={heroScrollRef}
+      ref={sectionRef}
       id="top"
       aria-label="Tanıtım"
-      className="relative min-h-[130vh] overflow-x-clip md:min-h-[160vh] lg:min-h-[180vh]"
+      className="relative isolate overflow-x-clip bg-[var(--hero-bg)] text-[var(--hero-ink)] min-h-screen lg:h-[220vh]"
     >
-      {/* hero'ya özel 64px major/minor grid + sağda silik trace dekoru */}
+      {/* ——— arka plan: 72px grid + sağ üst turuncu glow ——— */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 -z-10"
         style={{
-          backgroundImage:
-            "linear-gradient(rgba(70,120,102,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(70,120,102,.08) 1px, transparent 1px), linear-gradient(rgba(70,120,102,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(70,120,102,.035) 1px, transparent 1px)",
-          backgroundSize: "64px 64px, 64px 64px, 16px 16px, 16px 16px",
+          transform: `translate3d(0, ${(animate ? -travelled * M.parallax.grid : 0).toFixed(2)}px, 0)`,
+          opacity: animate ? 1 - rawProgress * (1 - M.parallax.gridOpacityTo) : 1,
         }}
-      />
-      <svg
-        aria-hidden
-        viewBox="0 0 600 620"
-        fill="none"
-        preserveAspectRatio="xMaxYMid slice"
-        className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-[55%] opacity-60 lg:block"
       >
-        <g stroke="rgba(100,160,135,.16)" strokeWidth={1}>
-          <path d="M480 80 H380 L340 120 H220" />
-          <path d="M520 200 H420 L390 230 H300" />
-          <path d="M500 420 H400 L370 450 H260" />
-          <path d="M540 540 H440 L410 510 H320" />
-        </g>
-        <g fill="rgba(100,160,135,.22)">
-          <circle cx="480" cy="80" r="3" />
-          <circle cx="520" cy="200" r="3" />
-          <circle cx="500" cy="420" r="3" />
-          <circle cx="540" cy="540" r="3" />
-        </g>
-      </svg>
+        <div className="hero-grid absolute inset-0" />
+        <div className="hero-glow absolute inset-0" />
+      </div>
 
-      <div className="md:sticky md:top-0 md:flex md:h-screen md:items-center">
-      <div className="relative mx-auto grid w-full max-w-[1500px] items-center gap-[20px] px-5 pb-16 pt-32 md:px-10 lg:grid-cols-[0.82fr_1.18fr] lg:px-[72px] lg:pt-36">
-        {/* ——— SOL (590-620px) ——— */}
-        <div className="max-w-[620px]">
-          <Rise delay={0} y={14}>
-            <p className="mb-[26px] font-mono text-[12px] uppercase tracking-[0.25em] text-[#e09335]">
-              {profile.tag}
-            </p>
-          </Rise>
+      <div ref={stageRef} className="relative lg:sticky lg:top-0 lg:flex lg:h-screen lg:items-center lg:overflow-hidden">
+        <div className="flex flex-col gap-16 px-5 pb-20 pt-28 sm:px-8 lg:mx-auto lg:w-full lg:max-w-[1440px] lg:px-10 lg:py-0 xl:px-[72px]">
+          {/* ——————————————— METİN ——————————————— */}
+          <div className="max-w-[592px] lg:w-[480px] xl:w-[592px]">
+            {/* 1 — ince çizgi + teknik etiket */}
+            <div style={group(0.7, 0.78)} className="flex items-center gap-4">
+              <span
+                aria-hidden
+                className="h-px w-12 origin-left bg-[var(--hero-accent)]"
+                style={{ transform: `scaleX(${eyebrowLineScale})` }}
+              />
+              <span className="font-mono text-[10px] font-500 uppercase tracking-[0.38em] text-[var(--hero-accent-ink)]">
+                {profile.tag}
+              </span>
+            </div>
 
-          <Rise delay={0.08}>
-            <h1 className="text-[clamp(64px,5.2vw,82px)] font-semibold leading-[0.95] tracking-[-0.04em] text-[var(--ink)]">
-              {profile.name}
+            {/* 2 — isim, iki satır */}
+            <h1 className="mt-12 font-display font-bold leading-[0.88] tracking-[-0.03em] text-[var(--hero-ink)] [font-size:clamp(48px,13vw,112px)] lg:[font-size:120px] lg:[letter-spacing:-3px]">
+              <span style={group(0.7, 0.78)} className="block">
+                Kaan
+              </span>
+              <span style={group(0.7, 0.78)} className="block">
+                Sezer
+              </span>
             </h1>
-          </Rise>
 
-          <Rise delay={0.16}>
-            <p className="mt-[18px] text-[25px] font-medium text-[var(--ink-dim)]">
-              {profile.title}
+            {/* 3 — ayraç + rol */}
+            <div style={group(0.76, 0.83)} className="mt-10 flex items-center gap-4">
+              <span aria-hidden className="h-px w-8 bg-[var(--hero-line-strong)]" />
+              <p className="font-mono text-[12px] font-600 uppercase tracking-[0.24em] text-[var(--hero-accent-ink)]">
+                {profile.title}
+              </p>
+            </div>
+
+            {/* 4 — paragraf */}
+            <p
+              style={group(0.81, 0.87)}
+              className="mt-8 max-w-[540px] text-pretty text-[17px] font-400 leading-[1.7] text-[var(--hero-ink-2)]"
+            >
+              {profile.introShort}
             </p>
-          </Rise>
 
-          <Rise delay={0.24}>
-            <p className="mt-[30px] max-w-[610px] text-[16px] leading-[1.65] text-[var(--muted)]">
-              {profile.intro}
-            </p>
-          </Rise>
-
-          <Rise delay={0.32}>
-            <div className="mt-[34px] flex flex-col gap-[18px] sm:flex-row sm:flex-wrap">
+            {/* 5 — CTA'lar */}
+            <div
+              style={group(0.85, 0.92)}
+              className="mt-14 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4"
+            >
               <a
                 href={`mailto:${profile.email}`}
-                className="inline-flex h-[52px] min-w-[170px] items-center justify-center gap-2 rounded-sm bg-[var(--accent)] px-6 text-sm font-semibold text-[#0b1512] shadow-[0_10px_28px_var(--accent-soft)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
+                className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-lg bg-[var(--hero-accent)] px-8 font-mono text-[12px] font-700 uppercase tracking-[0.18em] text-[#0a1712] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_16px_32px_rgba(217,138,77,0.35)] active:translate-y-0 active:shadow-md sm:w-auto"
               >
-                <Mail size={16} aria-hidden />
+                <Mail size={17} aria-hidden strokeWidth={2.2} />
                 E-posta Gönder
               </a>
               <a
                 href="#projeler"
-                className="group inline-flex h-[52px] min-w-[175px] items-center justify-center gap-2 rounded-sm border border-[var(--line)] bg-transparent px-6 text-sm font-medium text-[var(--ink-dim)] transition-colors duration-200 hover:border-[var(--accent)] hover:text-[var(--accent-ink)]"
+                className="group inline-flex h-14 w-full items-center justify-center gap-2.5 rounded-lg border-2 border-[var(--hero-line-strong)] bg-transparent px-8 font-mono text-[12px] font-700 uppercase tracking-[0.18em] text-[var(--hero-ink-2)] transition-all duration-300 hover:border-[var(--hero-accent)] hover:bg-[var(--hero-accent)]/8 hover:text-[var(--hero-accent-ink)] hover:shadow-[0_8px_24px_rgba(217,138,77,0.25)] sm:w-auto"
               >
                 Projeleri İncele
                 <ArrowDown
-                  size={16}
+                  size={17}
                   aria-hidden
-                  className="transition-transform duration-200 group-hover:translate-y-0.5"
+                  strokeWidth={2.2}
+                  className="transition-transform duration-300 group-hover:translate-y-1.5"
                 />
               </a>
             </div>
-          </Rise>
 
-          <Rise delay={0.4}>
-            <ul
-              aria-label="Uzmanlık alanları"
-              className="mt-[55px] flex flex-wrap gap-x-[34px] gap-y-4 lg:grid lg:grid-cols-[repeat(4,max-content)]"
-            >
-              {EXPERTISE.map((e) => (
-                <li key={e.top} className="flex items-start gap-2.5">
-                  <e.icon size={16} aria-hidden className="mt-0.5 shrink-0 text-[var(--accent-ink)]" />
-                  <span className="font-mono text-[12px] leading-[1.5] tracking-[0.04em] text-[var(--muted)]">
-                    {e.top}
-                    <br />
-                    {e.bottom}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Rise>
+            {/* 6 — ayraç + 2x2 uzmanlık grid'i */}
+            <div style={group(0.9, 0.96)} className="mt-16">
+              <span aria-hidden className="block h-px w-full bg-[var(--hero-line)]" />
+              <ul aria-label="Uzmanlık alanları" className="mt-8 grid grid-cols-2 gap-x-10 gap-y-9">
+                {EXPERTISE.map((e) => {
+                  const Icon = ICONS[e.icon];
+                  return (
+                    <li key={e.top} className="flex items-start gap-4">
+                      <span
+                        aria-hidden
+                        className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--hero-line-strong)] text-[var(--hero-accent-ink)] bg-[var(--hero-accent)]/5"
+                      >
+                        <Icon size={18} strokeWidth={1.8} />
+                      </span>
+                      <span className="font-mono text-[11px] font-600 uppercase leading-[1.6] tracking-[0.18em] text-[var(--hero-ink-2)]">
+                        {e.top}
+                        <br />
+                        {e.bottom}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
 
-          <Rise delay={0.48}>
-            <p className="mt-10 inline-flex items-center gap-3 font-mono text-[11px] tracking-[0.14em] text-[var(--muted)]">
-              SCROLL
-              <span aria-hidden className="relative h-px w-14 overflow-hidden bg-[var(--line)]">
-                <span className="scroll-hint-dot absolute top-1/2 h-[5px] w-[5px] -translate-y-1/2 rounded-full bg-[var(--accent)]" />
-              </span>
-              <span aria-hidden className="inline-block h-[5px] w-[5px] rounded-full bg-[var(--accent)]" />
-            </p>
-          </Rise>
+            {/* ——— Mobil/tablet: statik PCB, metnin altında akışta ———
+                Masaüstündeki scroll-scrub kompozisyonu (mutlak konumlu overlay)
+                küçük ekranlarda anlamsız; burada sade, animasyonsuz tek görsel. */}
+            <div className="mt-16 flex justify-center lg:hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element -- basit, animasyonsuz statik görsel */}
+              <img
+                src="/images/pcb-2.png"
+                alt="PCB görseli"
+                style={{ width: "clamp(280px, 92vw, 560px)", height: "auto" }}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* ——— SAĞ: scroll-controlled exploded PCB ——— */}
-        <div className="w-full min-w-0">
-          <HeroPCBExploded sectionRef={heroScrollRef} />
+        {/* ——————————————— Masaüstü: scroll-scrub PCB overlay ———————————————
+            Metin sütununun layout akışına katılmaz — mutlak konumlu, tüm
+            sticky sahneyi kaplar; konumu/ölçeği tamamen `heroProgress`'ten. */}
+        <div className="pointer-events-none absolute inset-0 z-10 hidden lg:block">
+          <PCBScrollStage progress={heroProgress} mouse={reduce ? { x: 0, y: 0 } : mouse} />
         </div>
-      </div>
+
+        {/* ——— sol altta SCROLL göstergesi (yalnızca desktop) ——— */}
+        <div
+          aria-hidden
+          className="hero-scroll-hint pointer-events-none absolute bottom-10 left-[72px] items-center gap-4 font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--hero-dim)]"
+          style={{ opacity: scrollHintOpacity }}
+        >
+          Scroll
+          <span className="relative block h-px w-14 bg-[var(--hero-line-strong)]">
+            <span className="hero-scroll-dot absolute top-1/2 block h-[5px] w-[5px] rounded-full bg-[var(--hero-accent)]" />
+          </span>
+        </div>
       </div>
     </section>
   );

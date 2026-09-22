@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp, Eye, Plus, Save, Trash2 } from "lucide-react";
 import { saveProjectAction, type ProjectInput } from "@/lib/admin-actions";
 import {
   MEDIA_TYPES,
+  SECTION_LAYOUTS,
   SECTION_TYPES,
   STATUS_OPTIONS,
   type CaseSectionType,
@@ -15,9 +16,9 @@ import {
   type ProjectStage,
 } from "@/lib/case-study-types";
 import ImagePicker from "./ImagePicker";
-import CaseStudyModal from "../CaseStudyModal";
+import ProjectDetail from "../ProjectDetail";
 
-const TABS = ["GENERAL", "CASE STUDY", "TECH SPECS", "MEDIA", "CONTRIBUTION", "SEO"] as const;
+const TABS = ["GENERAL", "CASE STUDY", "TECH SPECS", "TAGS", "MEDIA", "CONTRIBUTION", "SEO"] as const;
 
 type Draft = Omit<CaseStudyProject, "createdAt" | "updatedAt">;
 
@@ -77,6 +78,7 @@ export default function ProjectEditor({ initial }: { initial: Draft }) {
       sections: draft.sections.map((s, i) => ({ ...s, sortOrder: i + 1 })),
       media: draft.media.map((m, i) => ({ ...m, caption: m.caption ?? "", sortOrder: i + 1 })),
       pipeline: draft.pipeline ?? [],
+      tags: draft.tags ?? [],
     };
     const r = await saveProjectAction(input);
     setSaving(false);
@@ -336,6 +338,25 @@ export default function ProjectEditor({ initial }: { initial: Draft }) {
                     ))}
                   </div>
                 </div>
+                {s.image && (
+                  <div className="mt-3">
+                    {field("YERLEŞİM (GÖRSEL VARSA)", (
+                      <select
+                        value={s.layout ?? "text-image"}
+                        onChange={(e) =>
+                          set("sections", draft.sections.map((x, j) => (j === i ? { ...x, layout: e.target.value as typeof x.layout } : x)))
+                        }
+                        className={`${inputCls} max-w-xs font-mono text-[12px]`}
+                      >
+                        {SECTION_LAYOUTS.map((l) => (
+                          <option key={l.value} value={l.value}>
+                            {l.label}
+                          </option>
+                        ))}
+                      </select>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
             <button
@@ -371,14 +392,22 @@ export default function ProjectEditor({ initial }: { initial: Draft }) {
                   aria-label="Özellik değeri"
                   className={inputCls}
                 />
-                <button
-                  type="button"
-                  aria-label="Özelliği sil"
-                  onClick={() => set("specs", draft.specs.filter((_, j) => j !== i))}
-                  className="rounded-sm border border-[var(--line)] p-2 text-[var(--muted)] hover:text-red-400"
-                >
-                  <Trash2 size={14} aria-hidden />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button type="button" aria-label="Yukarı taşı" onClick={() => set("specs", move(draft.specs, i, -1))} className="rounded-sm border border-[var(--line)] p-2 text-[var(--muted)] hover:text-[var(--ink)]">
+                    <ArrowUp size={14} aria-hidden />
+                  </button>
+                  <button type="button" aria-label="Aşağı taşı" onClick={() => set("specs", move(draft.specs, i, 1))} className="rounded-sm border border-[var(--line)] p-2 text-[var(--muted)] hover:text-[var(--ink)]">
+                    <ArrowDown size={14} aria-hidden />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Özelliği sil"
+                    onClick={() => set("specs", draft.specs.filter((_, j) => j !== i))}
+                    className="rounded-sm border border-[var(--line)] p-2 text-[var(--muted)] hover:text-red-400"
+                  >
+                    <Trash2 size={14} aria-hidden />
+                  </button>
+                </div>
               </div>
             ))}
             <button
@@ -388,6 +417,55 @@ export default function ProjectEditor({ initial }: { initial: Draft }) {
             >
               <Plus size={14} aria-hidden /> Teknik Özellik Ekle
             </button>
+          </div>
+        )}
+
+        {tab === "TAGS" && (
+          <div>
+            <p className="font-mono text-[11px] tracking-[0.18em] text-[var(--muted)]">
+              TEKNOLOJİLER / ETİKETLER
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(draft.tags ?? []).map((t, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-2 rounded-sm border border-[var(--line)] bg-[var(--panel)] py-1.5 pl-3 pr-1.5 font-mono text-[12px] text-[var(--ink-dim)]"
+                >
+                  {t}
+                  <button
+                    type="button"
+                    aria-label={`${t} etiketini sil`}
+                    onClick={() => set("tags", (draft.tags ?? []).filter((_, j) => j !== i))}
+                    className="rounded-sm p-0.5 text-[var(--muted)] hover:text-red-400"
+                  >
+                    <Trash2 size={12} aria-hidden />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <form
+              className="mt-3 flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const input = form.elements.namedItem("newTag") as HTMLInputElement;
+                const v = input.value.trim();
+                if (v && !(draft.tags ?? []).includes(v)) {
+                  set("tags", [...(draft.tags ?? []), v]);
+                }
+                input.value = "";
+              }}
+            >
+              <input
+                name="newTag"
+                placeholder="Örn. STM32, FreeRTOS, CAN"
+                aria-label="Yeni etiket"
+                className={`${inputCls} max-w-xs font-mono text-[12px]`}
+              />
+              <button type="submit" className={btnCls}>
+                <Plus size={14} aria-hidden /> Ekle
+              </button>
+            </form>
           </div>
         )}
 
@@ -526,17 +604,40 @@ export default function ProjectEditor({ initial }: { initial: Draft }) {
         </button>
       </div>
 
+      {/* Önizleme: yayındaki proje sayfasıyla AYNI ProjectDetail bileşeni —
+          ayrı bir "sahte admin tasarımı" yok, yalnızca kapatılabilir bir
+          tam ekran katman içinde render edilir (admin panelinden ayrılmadan). */}
       {preview && (
-        <CaseStudyModal
-          project={{
-            ...draft,
-            id: draft.id || "preview",
-            slug: draft.title ? draft.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "preview",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }}
-          onClose={() => setPreview(false)}
-        />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Proje önizlemesi"
+          className="fixed inset-0 z-[200] overflow-y-auto bg-[var(--bg)]"
+        >
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--line)] bg-[var(--header-bg)] px-5 py-3 backdrop-blur-md md:px-8">
+            <p className="font-mono text-[11px] tracking-[0.2em] text-[var(--accent-ink)]">
+              ÖNİZLEME — YAYINDA DEĞİL
+            </p>
+            <button
+              type="button"
+              onClick={() => setPreview(false)}
+              className={btnCls}
+            >
+              Önizlemeyi Kapat
+            </button>
+          </div>
+          <ProjectDetail
+            project={{
+              ...draft,
+              id: draft.id || "preview",
+              slug: draft.slug?.trim() || (draft.title ? draft.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "preview"),
+              tags: draft.tags ?? [],
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }}
+            onBack={() => setPreview(false)}
+          />
+        </div>
       )}
     </div>
   );

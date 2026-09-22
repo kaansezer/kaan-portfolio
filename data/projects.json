@@ -16,9 +16,24 @@
     "seoTitle": "",
     "seoDescription": "",
     "specs": [
-      { "id": "u1s1", "label": "İşlemci", "value": "i.MX 8M", "sortOrder": 1 },
-      { "id": "u1s2", "label": "Odak", "value": "High-Speed PCB", "sortOrder": 2 },
-      { "id": "u1s3", "label": "Yazılım", "value": "Embedded Linux", "sortOrder": 3 }
+      {
+        "id": "u1s1",
+        "label": "İşlemci",
+        "value": "i.MX 8M",
+        "sortOrder": 1
+      },
+      {
+        "id": "u1s2",
+        "label": "Odak",
+        "value": "High-Speed PCB",
+        "sortOrder": 2
+      },
+      {
+        "id": "u1s3",
+        "label": "Yazılım",
+        "value": "Embedded Linux",
+        "sortOrder": 3
+      }
     ],
     "sections": [
       {
@@ -33,11 +48,26 @@
     "media": [],
     "contributions": [],
     "pipeline": [
-      { "label": "ARCHITECTURE", "state": "done" },
-      { "label": "SCHEMATIC", "state": "active" },
-      { "label": "LAYOUT", "state": "todo" },
-      { "label": "BRING-UP", "state": "todo" },
-      { "label": "LINUX", "state": "todo" }
+      {
+        "label": "ARCHITECTURE",
+        "state": "done"
+      },
+      {
+        "label": "SCHEMATIC",
+        "state": "active"
+      },
+      {
+        "label": "LAYOUT",
+        "state": "todo"
+      },
+      {
+        "label": "BRING-UP",
+        "state": "todo"
+      },
+      {
+        "label": "LINUX",
+        "state": "todo"
+      }
     ],
     "createdAt": "2026-01-01T00:00:00.000Z",
     "updatedAt": "2026-01-01T00:00:00.000Z"
@@ -59,10 +89,30 @@
     "seoTitle": "",
     "seoDescription": "",
     "specs": [
-      { "id": "u2s1", "label": "Katman", "value": "6", "sortOrder": 1 },
-      { "id": "u2s2", "label": "İşlemci", "value": "ARM Cortex M4", "sortOrder": 2 },
-      { "id": "u2s3", "label": "RF Menzil", "value": "10 km", "sortOrder": 3 },
-      { "id": "u2s4", "label": "Test İrtifası", "value": "5.270 m", "sortOrder": 4 }
+      {
+        "id": "u2s1",
+        "label": "Katman",
+        "value": "6",
+        "sortOrder": 1
+      },
+      {
+        "id": "u2s2",
+        "label": "İşlemci",
+        "value": "ARM Cortex M4",
+        "sortOrder": 2
+      },
+      {
+        "id": "u2s3",
+        "label": "RF Menzil",
+        "value": "10 km",
+        "sortOrder": 3
+      },
+      {
+        "id": "u2s4",
+        "label": "Test İrtifası",
+        "value": "5.270 m",
+        "sortOrder": 4
+      }
     ],
     "sections": [
       {
@@ -86,7 +136,7 @@
       "Bring-up and testing"
     ],
     "createdAt": "2026-01-01T00:00:00.000Z",
-    "updatedAt": "2026-01-01T00:00:00.000Z"
+    "updatedAt": "2026-09-22T16:36:57.643Z"
   },
   {
     "id": "u3",
@@ -100,13 +150,23 @@
     "organization": "BİTİRME PROJESİ",
     "date": "",
     "featured": false,
-    "visible": true,
+    "visible": false,
     "sortOrder": 3,
     "seoTitle": "",
     "seoDescription": "",
     "specs": [
-      { "id": "u3s1", "label": "Boyut", "value": "50 × 30 mm", "sortOrder": 1 },
-      { "id": "u3s2", "label": "Kart Sayısı", "value": "Ana kart + PSU", "sortOrder": 2 }
+      {
+        "id": "u3s1",
+        "label": "Boyut",
+        "value": "50 × 30 mm",
+        "sortOrder": 1
+      },
+      {
+        "id": "u3s2",
+        "label": "Kart Sayısı",
+        "value": "Ana kart + PSU",
+        "sortOrder": 2
+      }
     ],
     "sections": [
       {
@@ -119,13 +179,37 @@
       }
     ],
     "media": [
-      { "id": "u3m1", "type": "pcb", "image": "/images/ornifcs-board.png", "title": "OrniFCS — Uçuş Kontrol Kartı", "caption": "", "alt": "OrniFCS uçuş kontrol kartı", "sortOrder": 1 },
-      { "id": "u3m2", "type": "3d", "image": "/images/ornifcs-exploded.png", "title": "OrniFCS — Bileşen Yerleşimi", "caption": "", "alt": "OrniFCS bileşen yerleşimi", "sortOrder": 2 },
-      { "id": "u3m3", "type": "pcb", "image": "/images/ornipsu-board.png", "title": "OrniPSU — Güç Kartı", "caption": "", "alt": "OrniPSU güç kartı", "sortOrder": 3 }
+      {
+        "id": "u3m1",
+        "type": "pcb",
+        "image": "/images/ornifcs-board.png",
+        "title": "OrniFCS — Uçuş Kontrol Kartı",
+        "caption": "",
+        "alt": "OrniFCS uçuş kontrol kartı",
+        "sortOrder": 1
+      },
+      {
+        "id": "u3m2",
+        "type": "3d",
+        "image": "/images/ornifcs-exploded.png",
+        "title": "OrniFCS — Bileşen Yerleşimi",
+        "caption": "",
+        "alt": "OrniFCS bileşen yerleşimi",
+        "sortOrder": 2
+      },
+      {
+        "id": "u3m3",
+        "type": "pcb",
+        "image": "/images/ornipsu-board.png",
+        "title": "OrniPSU — Güç Kartı",
+        "caption": "",
+        "alt": "OrniPSU güç kartı",
+        "sortOrder": 3
+      }
     ],
     "contributions": [],
     "createdAt": "2026-01-01T00:00:00.000Z",
-    "updatedAt": "2026-01-01T00:00:00.000Z"
+    "updatedAt": "2026-09-22T16:44:58.566Z"
   },
   {
     "id": "u4",
@@ -144,9 +228,24 @@
     "seoTitle": "",
     "seoDescription": "",
     "specs": [
-      { "id": "u4s1", "label": "Katman", "value": "4", "sortOrder": 1 },
-      { "id": "u4s2", "label": "İşlemci", "value": "ARM Cortex M4", "sortOrder": 2 },
-      { "id": "u4s3", "label": "Haberleşme", "value": "SPI / UART / I2C / LoRa", "sortOrder": 3 }
+      {
+        "id": "u4s1",
+        "label": "Katman",
+        "value": "4",
+        "sortOrder": 1
+      },
+      {
+        "id": "u4s2",
+        "label": "İşlemci",
+        "value": "ARM Cortex M4",
+        "sortOrder": 2
+      },
+      {
+        "id": "u4s3",
+        "label": "Haberleşme",
+        "value": "SPI / UART / I2C / LoRa",
+        "sortOrder": 3
+      }
     ],
     "sections": [
       {
@@ -161,7 +260,7 @@
     "media": [],
     "contributions": [],
     "createdAt": "2026-01-01T00:00:00.000Z",
-    "updatedAt": "2026-01-01T00:00:00.000Z"
+    "updatedAt": "2026-09-22T16:36:57.643Z"
   },
   {
     "id": "u5",
@@ -180,9 +279,24 @@
     "seoTitle": "",
     "seoDescription": "",
     "specs": [
-      { "id": "u5s1", "label": "Katman", "value": "4", "sortOrder": 1 },
-      { "id": "u5s2", "label": "Sensör", "value": "Strain Gage", "sortOrder": 2 },
-      { "id": "u5s3", "label": "Amaç", "value": "Yapısal ivme analizi", "sortOrder": 3 }
+      {
+        "id": "u5s1",
+        "label": "Katman",
+        "value": "4",
+        "sortOrder": 1
+      },
+      {
+        "id": "u5s2",
+        "label": "Sensör",
+        "value": "Strain Gage",
+        "sortOrder": 2
+      },
+      {
+        "id": "u5s3",
+        "label": "Amaç",
+        "value": "Yapısal ivme analizi",
+        "sortOrder": 3
+      }
     ],
     "sections": [
       {
@@ -197,6 +311,6 @@
     "media": [],
     "contributions": [],
     "createdAt": "2026-01-01T00:00:00.000Z",
-    "updatedAt": "2026-01-01T00:00:00.000Z"
+    "updatedAt": "2026-09-22T16:36:57.643Z"
   }
 ]

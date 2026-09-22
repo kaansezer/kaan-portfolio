@@ -1,3 +1,27 @@
+export const site = {
+  /** Canonical origin — nginx conf'taki domain ile aynı olmalı. */
+  url: "https://kaansezer.com",
+  locale: "tr_TR",
+  /** Paylaşım önizlemesi ve arama sonucu için kısa, iddialı özet. */
+  description:
+    "STM32/ARM tabanlı gömülü sistemler, 4–6 katmanlı PCB tasarımı ve aviyonik uygulamalar. TEKNOFEST'te 5.270 m irtifada uçuş testi geçmiş uçuş kontrol ve görev yükü kartları.",
+  keywords: [
+    "Kaan Sezer",
+    "elektrik elektronik mühendisi",
+    "gömülü sistemler",
+    "embedded systems",
+    "PCB tasarımı",
+    "Altium Designer",
+    "STM32",
+    "ARM Cortex-M4",
+    "aviyonik",
+    "uçuş kontrol kartı",
+    "TEKNOFEST",
+    "Embedded Linux",
+    "i.MX 8M",
+  ],
+} as const;
+
 export const profile = {
   brand: "KS · REV-A",
   tag: "EE · GÖMÜLÜ SİSTEMLER · PCB",
@@ -5,6 +29,9 @@ export const profile = {
   title: "Elektrik-Elektronik Mühendisi",
   intro:
     "STM32/ARM tabanlı gömülü sistemler, çok katmanlı PCB tasarımı ve aviyonik uygulamalar üzerine çalışıyorum. Altium Designer ile 4 ve 6 katmanlı uçuş kontrol ve görev yükü kartları tasarladım; C tabanlı gömülü yazılım, SPI/UART/I2C haberleşmesi, LoRa, konum belirleme, sensör entegrasyonu ve güç/anahtarlama devreleri üzerinde deneyim edindim. Şu anda Embedded Linux ve yüksek hızlı PCB tasarımı üzerine çalışıyorum.",
+  /** Hero'da kullanılan kısa sürüm — uzun hali `intro`. */
+  introShort:
+    "STM32/ARM tabanlı gömülü sistemler ve çok katmanlı PCB tasarımı üzerine çalışıyorum. Altium ile 4 ve 6 katmanlı uçuş kontrol ve görev yükü kartları tasarladım; şu anda Embedded Linux ve yüksek hızlı PCB tasarımına odaklanıyorum.",
   email: "kaansezer0594@gmail.com",
   linkedin: "https://www.linkedin.com/in/kaansezer",
   linkedinShort: "linkedin.com/in/kaansezer",

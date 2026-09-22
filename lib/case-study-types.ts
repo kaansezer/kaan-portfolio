@@ -25,6 +25,8 @@ export type ProjectSpec = {
   sortOrder: number;
 };
 
+export type SectionLayout = "text" | "text-image" | "image-text" | "full-media";
+
 export type ProjectSection = {
   id: string;
   type: CaseSectionType;
@@ -34,6 +36,8 @@ export type ProjectSection = {
   content: string;
   image?: string;
   caption?: string;
+  /** Görsel varsa yerleşim biçimi; verilmezse "text" (görsel content altında). */
+  layout?: SectionLayout;
   visible: boolean;
   sortOrder: number;
 };
@@ -76,9 +80,18 @@ export type CaseStudyProject = {
   media: ProjectMediaItem[];
   contributions: string[];
   pipeline?: ProjectStage[];
+  /** Teknolojiler/etiketler — serbest metin, ör. "STM32", "FreeRTOS", "CAN". */
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
 };
+
+export const SECTION_LAYOUTS: { value: SectionLayout; label: string }[] = [
+  { value: "text", label: "METİN" },
+  { value: "text-image", label: "METİN + GÖRSEL" },
+  { value: "image-text", label: "GÖRSEL + METİN" },
+  { value: "full-media", label: "TAM GENİŞLİK MEDYA" },
+];
 
 export const SECTION_TYPES: { value: CaseSectionType; label: string }[] = [
   { value: "overview", label: "OVERVIEW" },
