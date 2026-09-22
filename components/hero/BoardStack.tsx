@@ -65,10 +65,10 @@ export default function BoardStack({
             <div
               role="img"
               aria-label="Kart görselleri henüz eklenmedi"
-              className="absolute inset-0 flex items-center justify-center rounded-md border border-dashed border-[var(--hero-line-strong)]"
+              className="absolute inset-0 flex items-center justify-center rounded-xl border border-dashed border-[var(--hero-line-strong)]/50 bg-[var(--hero-line)]/20"
             >
-              <div className="px-6 text-center font-mono text-[11px] leading-[2] tracking-[0.14em] text-[var(--hero-dim)]">
-                <p className="text-[var(--hero-accent-ink)]">[ KART GÖRSELLERİ ]</p>
+              <div className="px-8 text-center font-mono text-[11px] leading-[2] tracking-[0.16em] text-[var(--hero-dim)]">
+                <p className="font-600 text-[var(--hero-accent-ink)]">[ KART GÖRSELLERİ ]</p>
                 {layers.map((l) => (
                   <p key={l.src} className="opacity-70">
                     {l.src}

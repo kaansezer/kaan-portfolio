@@ -68,11 +68,11 @@ export default function Header() {
   }, []);
 
   const linkClass = (href: string, mobile = false) =>
-    `relative inline-block font-mono tracking-[0.14em] transition-colors duration-200 ${
-      mobile ? "block py-2 text-[13px]" : "text-[12px]"
+    `relative inline-flex items-center font-mono text-[11px] font-600 tracking-[0.16em] transition-colors duration-300 ${
+      mobile ? "block py-3.5 px-3" : ""
     } ${
       active === href.slice(1)
-        ? "text-[#dc8b32]"
+        ? "text-[var(--accent)] font-700"
         : mobile
           ? "text-[var(--ink-dim)] hover:text-[var(--accent-ink)]"
           : "text-[var(--muted)] hover:text-[var(--accent-ink)]"

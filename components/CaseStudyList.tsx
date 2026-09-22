@@ -1,62 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, Star } from "lucide-react";
 import BoardImage from "./BoardImage";
 import { RevealGroup, RevealItem } from "./Reveal";
 import StatusBadge from "./StatusBadge";
-import CaseStudyModal from "./CaseStudyModal";
+import { useProjectNav } from "./ProjectNavContext";
 import { hasCaseDetail, type CaseStudyProject } from "@/lib/case-study-types";
 
 const STAGE_MARK = { done: "✓", active: "●", todo: "○" } as const;
 
-function paramOf(): string | null {
-  if (typeof window === "undefined") return null;
-  return new URLSearchParams(window.location.search).get("project");
-}
-
 /**
- * Proje kartları + case study modal + URL state (?project=slug).
- * Kart tıklaması sayfa geçişi yapmaz; back tuşu modalı kapatır.
+ * Proje kartları. Tıklama, ProjectViewGate'e (üst seviye) bildirilir —
+ * detay artık modal değil, tam sayfa case-study görünümü olarak açılır.
  */
 export default function CaseStudyList({ projects }: { projects: CaseStudyProject[] }) {
-  const [openSlug, setOpenSlug] = useState<string | null>(() => {
-    const initial = paramOf();
-    return initial && projects.some((p) => p.slug === initial) ? initial : null;
-  });
-  const [pushed, setPushed] = useState(false);
-
-  const open = useCallback((slug: string) => {
-    setOpenSlug(slug);
-    setPushed(true);
-    window.history.pushState({ project: slug }, "", `?project=${slug}`);
-  }, []);
-
-  const close = useCallback(() => {
-    if (pushed) {
-      setPushed(false);
-      window.history.back();
-    } else {
-      setOpenSlug(null);
-    }
-  }, [pushed]);
-
-  // back tuşu
-  useEffect(() => {
-    const onPop = () => setOpenSlug(paramOf());
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, []);
-
-  // modal kapalıyken URL'de artık parametre kalmasın
-  useEffect(() => {
-    if (openSlug) return;
-    if (paramOf()) {
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-  }, [openSlug]);
-
-  const active = projects.find((p) => p.slug === openSlug) ?? null;
+  const { openProject } = useProjectNav();
 
   return (
     <>
@@ -73,7 +31,7 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
               delay={Math.min(i * 0.08, 0.16)}
             >
               <div
-                onClick={detail ? () => open(p.slug) : undefined}
+                onClick={detail ? () => openProject(p.slug) : undefined}
                 role={detail ? "button" : undefined}
                 tabIndex={detail ? 0 : undefined}
                 onKeyDown={
@@ -81,19 +39,19 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                     ? (e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          open(p.slug);
+                          openProject(p.slug);
                         }
                       }
                     : undefined
                 }
                 aria-label={detail ? `${p.title} — detayları incele` : undefined}
-                className={`group relative overflow-hidden rounded-md border bg-[var(--panel)] p-6 transition-[transform,border-color,box-shadow] duration-200 md:p-8 ${
+                className={`group relative overflow-hidden rounded-xl border bg-[var(--panel)] p-8 transition-all duration-300 md:p-10 ${
                   p.featured
-                    ? "border-[var(--accent-soft)] shadow-[0_0_28px_var(--accent-soft)]"
-                    : "border-[var(--line)]"
+                    ? "border-[var(--accent)]/45 bg-gradient-to-br from-[var(--panel)] via-[var(--panel)] to-[var(--panel-soft)] shadow-[0_0_40px_var(--accent-soft)] ring-1 ring-[var(--accent)]/20"
+                    : "border-[var(--line)] hover:border-[var(--line-soft)]"
                 } ${
                   detail
-                    ? "cursor-pointer hover:-translate-y-[3px] hover:border-[var(--accent)] hover:shadow-[0_0_32px_var(--accent-soft)]"
+                    ? "card-glow-hover cursor-pointer hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
                     : ""
                 }`}
               >
@@ -111,7 +69,7 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                         {p.projectCode}
                       </span>
                       {p.featured && (
-                        <span className="inline-flex items-center gap-1.5 rounded-sm border border-[var(--accent-soft)] px-2 py-0.5 font-mono text-[10px] tracking-[0.18em] text-[var(--accent-ink)]">
+                        <span className="badge-glow inline-flex items-center gap-1.5 rounded-md border border-[var(--accent)]/30 bg-[var(--accent)]/5 px-2.5 py-1 font-mono text-[10px] font-600 tracking-[0.18em] text-[var(--accent-ink)]">
                           <Star size={10} aria-hidden fill="currentColor" strokeWidth={0} />
                           ÖNE ÇIKAN
                         </span>
@@ -139,6 +97,21 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
                     {p.shortDescription}
                   </p>
                 </RevealItem>
+
+                {p.tags && p.tags.length > 0 && (
+                  <RevealItem y={10} duration={0.5}>
+                    <ul aria-label="Teknolojiler" className="mt-4 flex flex-wrap gap-2">
+                      {p.tags.map((t) => (
+                        <li
+                          key={t}
+                          className="rounded-sm border border-[var(--line)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--muted)]"
+                        >
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  </RevealItem>
+                )}
 
                 {p.specs.length > 0 && (
                   <RevealItem y={12} duration={0.5}>
@@ -212,8 +185,6 @@ export default function CaseStudyList({ projects }: { projects: CaseStudyProject
           );
         })}
       </div>
-
-      {active && <CaseStudyModal project={active} onClose={close} />}
     </>
   );
 }

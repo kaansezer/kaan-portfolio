@@ -12,12 +12,12 @@ export default function SectionHead({ title, sheet }: { title: string; sheet: st
 
   return (
     <RevealGroup self={false} stagger={0.08} childrenDelay={0} amount={0.4}>
-      <div className="flex items-end justify-between gap-4 pb-4">
+      <div className="flex flex-col items-start justify-between gap-8 pb-8 sm:flex-row sm:items-baseline sm:gap-6 sm:pb-6">
         <RevealItem
           as="h2"
           y={16}
           duration={0.6}
-          className="text-balance text-3xl font-semibold tracking-tight text-[var(--ink)] md:text-4xl"
+          className="text-balance text-4xl font-bold tracking-[-0.02em] text-[var(--ink)] md:text-5xl lg:text-6xl"
         >
           {title}
         </RevealItem>
@@ -25,7 +25,7 @@ export default function SectionHead({ title, sheet }: { title: string; sheet: st
           as="span"
           y={0}
           duration={0.6}
-          className="whitespace-nowrap font-mono text-[11px] tracking-[0.22em] text-[var(--muted)]"
+          className="whitespace-nowrap font-mono text-[10px] font-700 tracking-[0.28em] text-[var(--muted)]"
         >
           {sheet}
         </RevealItem>

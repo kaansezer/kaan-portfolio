@@ -16,8 +16,8 @@ export default function Experience() {
       };
 
   return (
-    <section id="deneyim" aria-label="Deneyim" className="scroll-mt-20">
-      <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 md:py-28">
+    <section id="deneyim" aria-label="Deneyim" className="scroll-mt-20" data-reveal-section>
+      <div className="mx-auto max-w-6xl px-5 py-24 md:px-8 md:py-36 lg:py-40">
         <SectionHead title="Deneyim" sheet="SHEET 01/04" />
 
         <ol className="relative mt-10 space-y-12 pl-8 md:pl-12">

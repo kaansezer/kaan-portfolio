@@ -135,6 +135,104 @@ body {
   );
 }
 
+/* ——— Çok yavaş, çok soluk ambient gradient — grid'in ÜSTÜNE, ayrı katman ———
+   Grid'e dokunmuyor; yalnızca arka planda çok hafif bir "nefes alma" hissi. */
+.ambient-gradient {
+  background: radial-gradient(
+      ellipse 60% 50% at 20% 15%,
+      rgba(64, 160, 120, 0.05),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 85% 80%,
+      rgba(217, 138, 77, 0.045),
+      transparent 60%
+    );
+  background-size: 160% 160%;
+  animation: ambient-drift 36s ease-in-out infinite;
+}
+
+@keyframes ambient-drift {
+  0%,
+  100% {
+    background-position: 0% 0%, 100% 100%;
+  }
+  50% {
+    background-position: 12% 8%, 88% 92%;
+  }
+}
+
+/* ——— Çok soluk SVG noise — derinlik hissi, bant efektini kırar ——— */
+.noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+}
+
+/* ——— İmleç glow — yalnızca fare/trackpad'i olan cihazlarda, kullanıcı
+   hareket ettirdikçe günceller; scroll/otomatik oynatma YOK. ——— */
+.cursor-glow {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cursor-glow {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(
+      circle 420px at var(--cursor-x, 50%) var(--cursor-y, 50%),
+      rgba(220, 139, 50, 0.06),
+      transparent 70%
+    );
+    transition: opacity 0.4s ease;
+  }
+}
+
+/* ——— Öne çıkan proje rozeti: çok hafif nefes alan glow ——— */
+@keyframes badge-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 139, 50, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(220, 139, 50, 0);
+  }
+}
+.badge-glow {
+  animation: badge-pulse 2.6s ease-in-out infinite;
+}
+
+/* ——— Kart hover: degrade kenarlık glow'u ———
+   ::before katmanında degrade arka plan + mask-composite ile yalnızca
+   "kenarlık" kalınlığı görünür kılınır (border-image'den daha esnek). */
+.card-glow-hover {
+  position: relative;
+}
+.card-glow-hover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    transparent 35%,
+    transparent 65%,
+    var(--accent) 100%
+  );
+  opacity: 0;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.card-glow-hover:hover::before {
+  opacity: 0.55;
+}
+
 /* ——— Hero arka planı ——— */
 
 /* 72px'lik çok soluk teknik grid */
@@ -158,6 +256,7 @@ body {
    Sütun daraldıkça yığın da orantılı küçülür, sağdan kesilmez. */
 .hero-stack {
   --k: 1;
+  width: 100%;
 }
 @media (min-width: 1024px) and (max-width: 1279px) {
   .hero-stack {
@@ -239,14 +338,186 @@ body {
   border-radius: 2px;
 }
 
+/* ——— scroll-craft animations ——— */
+[data-reveal-section],
+[data-reveal-card],
+[data-reveal-item] {
+  opacity: 0;
+}
+
+[data-reveal-section].sc-in,
+[data-reveal-card].sc-in,
+[data-reveal-item].sc-in {
+  animation: sc-reveal 0.7s ease-out forwards;
+}
+
+@keyframes sc-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ——— Button base styles ——— */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 1.75rem;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--accent-ink);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 1.75rem;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: var(--panel-soft);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+/* ——— Section spacing ——— */
+.section-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 64rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .section-wrapper {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.section-spacing {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+@media (min-width: 768px) {
+  .section-spacing {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-spacing {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+}
+
+/* ——— Link styles ——— */
+.link-subtle {
+  color: var(--ink-dim);
+  transition: color 0.2s;
+}
+
+.link-subtle:hover {
+  color: var(--accent-ink);
+}
+
+.link-accent {
+  color: var(--accent);
+  transition: color 0.2s;
+}
+
+.link-accent:hover {
+  color: var(--accent-soft);
+}
+
+/* ——— Text utilities ——— */
+.text-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.34em;
+}
+
+.text-body-sm {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.text-body {
+  font-size: 16px;
+  line-height: 1.72;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
   .animate-hero-float,
   .scroll-hint-dot,
-  .hero-scroll-dot {
+  .hero-scroll-dot,
+  .ambient-gradient,
+  .badge-glow {
     animation: none;
+  }
+  .cursor-glow {
+    display: none;
   }
   *,
   *::before,

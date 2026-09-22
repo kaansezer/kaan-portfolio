@@ -35,7 +35,7 @@ export default function StatusBadge({ status }: { status: ProjectStatus }) {
   const ui = STATUS_UI[status];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.08em] md:text-[11px] ${ui.className}`}
+      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-mono text-[10px] font-600 uppercase tracking-[0.1em] transition-colors duration-200 md:text-[11px] ${ui.className}`}
     >
       <span aria-hidden className={ui.dotClassName}>
         {ui.mark}

@@ -4,12 +4,12 @@ import { RevealGroup, RevealItem } from "./Reveal";
 
 export default function Education() {
   return (
-    <section id="egitim" aria-label="Eğitim" className="scroll-mt-20">
-      <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 md:py-28">
+    <section id="egitim" aria-label="Eğitim" className="scroll-mt-20" data-reveal-section>
+      <div className="mx-auto max-w-6xl px-5 py-24 md:px-8 md:py-36 lg:py-40">
         <SectionHead title="Eğitim" sheet="SHEET 03/04" />
 
         <RevealGroup className="mt-10" y={28} scaleFrom={0.98}>
-          <div className="rounded-md border border-[var(--line)] bg-[var(--panel)] p-6 md:p-10">
+          <div className="rounded-lg border border-[var(--line)] bg-[var(--panel)] p-6 transition-colors duration-200 hover:border-[var(--accent)]/30 hover:bg-[var(--panel-soft)] md:p-10">
             <RevealItem
               as="p"
               y={12}

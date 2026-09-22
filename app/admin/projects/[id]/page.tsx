@@ -26,6 +26,7 @@ function blank(): Omit<CaseStudyProject, "createdAt" | "updatedAt"> {
     media: [],
     contributions: [],
     pipeline: [],
+    tags: [],
   };
 }
 

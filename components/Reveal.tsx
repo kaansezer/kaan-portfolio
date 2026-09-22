@@ -10,10 +10,12 @@ type Tag =
   | "li"
   | "ul"
   | "ol"
+  | "dl"
   | "article"
   | "section"
   | "span"
   | "figure"
+  | "h1"
   | "h2"
   | "h3"
   | "p";

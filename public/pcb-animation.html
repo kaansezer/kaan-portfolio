@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB Stack Animation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 1100px;
+            height: 720px;
+            background: linear-gradient(135deg, #0a1712 0%, #051410 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Subtle grid background */
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(90, 140, 120, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(90, 140, 120, 0.06) 1px, transparent 1px);
+            background-size: 72px 72px;
+            pointer-events: none;
+        }
+
+        /* Glow effect (subtle) */
+        .glow {
+            position: absolute;
+            width: 600px;
+            height: 500px;
+            background: radial-gradient(
+                ellipse 60% 55% at 50% 30%,
+                rgba(217, 138, 77, 0.15),
+                transparent 70%
+            );
+            pointer-events: none;
+            filter: blur(60px);
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .image-container {
+            position: relative;
+            width: 420px;
+            height: 420px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pcb-image {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            border: 1px solid rgba(90, 140, 120, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation-fill-mode: both;
+        }
+
+        /* PCB 1: Fade in + Scale */
+        .pcb-1 {
+            animation: fadeInScale 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.85);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* PCB 2: Slide from right + Fade */
+        .pcb-2 {
+            animation: slideInRight 0.8s ease-out forwards;
+            animation-delay: 0.5s;
+            opacity: 0;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(80px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        /* Rotation/Switching effect every 5 seconds */
+        .pcb-1.rotate-out {
+            animation: rotateOut 0.6s ease-in forwards;
+        }
+
+        .pcb-2.rotate-in {
+            animation: rotateIn 0.6s ease-out forwards;
+        }
+
+        @keyframes rotateOut {
+            from {
+                opacity: 1;
+                transform: perspective(800px) rotateY(0deg) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: perspective(800px) rotateY(-25deg) scale(0.9);
+            }
+        }
+
+        @keyframes rotateIn {
+            from {
+                opacity: 0;
+                transform: perspective(800px) rotateY(25deg) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: perspective(800px) rotateY(0deg) scale(1);
+            }
+        }
+
+        /* Info text (optional, can be removed) */
+        .info {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: rgba(154, 169, 159, 0.6);
+            text-transform: uppercase;
+            z-index: 5;
+            animation: fadeIn 1s ease-out 1.2s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="grid-bg"></div>
+        <div class="glow"></div>
+
+        <div class="content">
+            <div class="image-container">
+                <img src="/images/pcb-top-v2.png" alt="PCB 1" class="pcb-image pcb-1" id="pcb1">
+                <img src="/images/pcb-top-v2.png" alt="PCB 2" class="pcb-image pcb-2" id="pcb2">
+            </div>
+        </div>
+
+        <div class="info">
+            PCB Stack Animation • Every 5s Rotation
+        </div>
+    </div>
+
+    <script>
+        const pcb1 = document.getElementById('pcb1');
+        const pcb2 = document.getElementById('pcb2');
+        let toggle = true;
+
+        // Rotation cycle every 5 seconds
+        setInterval(() => {
+            if (toggle) {
+                // Show pcb1, hide pcb2
+                pcb1.classList.remove('rotate-out');
+                pcb2.classList.add('rotate-out');
+                pcb2.classList.remove('rotate-in');
+
+                setTimeout(() => {
+                    pcb1.style.opacity = '1';
+                    pcb1.style.zIndex = '10';
+                    pcb2.style.opacity = '0';
+                    pcb2.style.zIndex = '5';
+                }, 300);
+            } else {
+                // Show pcb2, hide pcb1
+                pcb1.classList.add('rotate-out');
+                pcb2.classList.remove('rotate-out');
+                pcb2.classList.add('rotate-in');
+
+                setTimeout(() => {
+                    pcb1.style.opacity = '0';
+                    pcb1.style.zIndex = '5';
+                    pcb2.style.opacity = '1';
+                    pcb2.style.zIndex = '10';
+                }, 300);
+            }
+            toggle = !toggle;
+        }, 5000);
+
+        // Set initial z-index
+        pcb1.style.zIndex = '10';
+        pcb2.style.zIndex = '5';
+    </script>
+</body>
+</html>

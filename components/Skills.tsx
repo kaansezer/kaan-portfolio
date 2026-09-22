@@ -17,8 +17,8 @@ export default function Skills() {
       };
 
   return (
-    <section id="yetenekler" aria-label="Yetenekler" className="scroll-mt-20">
-      <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 md:py-28">
+    <section id="yetenekler" aria-label="Yetenekler" className="scroll-mt-20" data-reveal-section>
+      <div className="mx-auto max-w-6xl px-5 py-24 md:px-8 md:py-36 lg:py-40">
         <SectionHead title="Yetenekler" sheet="SHEET 04/04" />
 
         <RevealGroup className="mt-10" y={24} scaleFrom={1} stagger={0.06}>
@@ -30,7 +30,7 @@ export default function Skills() {
             MALZEME LİSTESİ — BOM / YETENEK DÖKÜMÜ
           </RevealItem>
 
-          <div className="mt-4 overflow-hidden rounded-md border border-[var(--line)]">
+          <div className="mt-4 overflow-hidden rounded-lg border border-[var(--line)]">
             <table className="w-full border-collapse text-left">
               <thead className="sr-only">
                 <tr>
@@ -43,8 +43,8 @@ export default function Skills() {
                   <motion.tr
                     key={row.category}
                     variants={rowVariants}
-                    className={`grid gap-1 px-5 py-4 sm:table-row md:px-6 ${
-                      i % 2 === 0 ? "bg-[var(--panel)]" : "bg-transparent"
+                    className={`grid gap-1 px-5 py-4 transition-colors duration-200 sm:table-row md:px-6 ${
+                      i % 2 === 0 ? "bg-[var(--panel)]" : "bg-transparent hover:bg-[var(--panel-soft)]"
                     } ${i > 0 ? "border-t border-[var(--line-soft)]" : ""}`}
                   >
                     <th
